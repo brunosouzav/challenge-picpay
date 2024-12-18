@@ -11,6 +11,7 @@ import picpay.challenge.dtos.RegisterDTO;
 import picpay.challenge.dtos.TokenResponseDTO;
 import picpay.challenge.exceptions.DocumentAlreadyRegisteredException;
 import picpay.challenge.exceptions.EmailAlreadyRegisteredException;
+import picpay.challenge.exceptions.EmailInvalidException;
 import picpay.challenge.model.User;
 import picpay.challenge.repositories.UserRepository;
 
@@ -57,8 +58,8 @@ public class AuthenticationService {
 		authenticationManager
 				.authenticate(new UsernamePasswordAuthenticationToken(request.email(), request.password()));
 
-		var user = repository.findByEmail(request.email())
-				.orElseThrow(() -> new IllegalArgumentException("O email " + request.email() + "não foi encontrado"));
+		User user = repository.findByEmail(request.email())
+				.orElseThrow(() -> new EmailInvalidException("O email " + request.email() + "não foi encontrado"));
 
 		String jwtToken = jwtService.generateToken(user);
 		return TokenResponseDTO.builder().token(jwtToken).build();
