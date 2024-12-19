@@ -29,8 +29,5 @@ public class GlobalExceptionHandler {
 	    return new ResponseEntity<>("Usuário não encontrado: " + ex.getMessage(), HttpStatus.NOT_FOUND);
 	}
 	
-	@ExceptionHandler(UsernameNotFoundException.class)
-	public ResponseEntity<String> handleUserNotFoundException(UsernameNotFoundException exception) {
-	    return new ResponseEntity<>(exception.getMessage(), HttpStatus.NOT_FOUND);
-	}
+	
 }
