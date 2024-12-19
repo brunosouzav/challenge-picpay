@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.stereotype.Service;
 
+import picpay.challenge.exceptions.AccountAlreadyRegisteredException;
 import picpay.challenge.exceptions.AccountNotFoundException;
 import picpay.challenge.model.Account;
 import picpay.challenge.model.User;
@@ -21,7 +22,7 @@ public class AccountService {
 	
 	public void createAccount(User user, Account account) {
 		if(user.getAccount() != null) {
-			throw new IllegalArgumentException("Conta já existente");
+			throw new AccountAlreadyRegisteredException("Usuario " + user.getId() + " já tem conta ativa");
 		}
 		
 		Account newAccount = new Account();
