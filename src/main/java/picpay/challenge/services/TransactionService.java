@@ -10,6 +10,7 @@ import picpay.challenge.dtos.TransactionDTO;
 import picpay.challenge.enus.Status;
 import picpay.challenge.enus.UserRole;
 import picpay.challenge.exceptions.InsufficientFundsException;
+import picpay.challenge.exceptions.TransactionNotFoundException;
 import picpay.challenge.exceptions.UnauthorizedException;
 import picpay.challenge.model.Account;
 import picpay.challenge.model.Transaction;
@@ -27,7 +28,10 @@ public class TransactionService {
 	private AccountRepository accountRepository;
 	
 	@Autowired 
-	private AccountService accountService;
+	private AccountService accountService; 
+	
+	@Autowired
+	private EmailService emailService;
 	
 	public void createTransaction(TransactionDTO transactiondto) {
 		
@@ -56,14 +60,45 @@ public class TransactionService {
 		
 		
 		Transaction transaction = new Transaction(senderAccount, receiverAccount, transactiondto.amount(), data, Status.COMPLETED); 
-		transactionRepository.save(transaction);
+		transactionRepository.save(transaction); 
+		
+		emailService.sendEmail(transaction.getSender().getUser().getEmail(), "Transação", "Transação no valor de R$" + transaction.getValue() + "concluida");
 	}
 
+	public void reverseTransaction(Transaction transaction) {
+		findByTransaction(transaction.getId());
+		if(!transaction.getStatus().equals(Status.COMPLETED)) {
+			throw new IllegalStateException("Apenas transações concluidas pode ser revertidas");
+		}
+		
+		Account senderAccount = transaction.getSender();
+		Account receiverAccount = transaction.getReceiver();
+		
+		if(receiverAccount.getBalance()<transaction.getValue()) {
+			throw new InsufficientFundsException("Saldo insuficiente para reverter a transação");
+		}
+		
+		receiverAccount.setBalance(receiverAccount.getBalance() - transaction.getValue());
+		senderAccount.setBalance(senderAccount.getBalance() + transaction.getValue()); 
+		
+		accountRepository.save(receiverAccount);
+		accountRepository.save(senderAccount);
+		
+		transaction.setStatus(Status.REVERTED);
+		transactionRepository.save(transaction);
+		
+		emailService.sendEmail(transaction.getSender().getUser().getEmail(), "Transação", "Transação no valor de R$" + transaction.getValue() + "revertida");
+		
+	}
 
+	
 	public List<Transaction> getAllTransactions() {
 		return transactionRepository.findAll(); 
 	}
 
-
+	public Transaction findByTransaction(Long id) {
+		return transactionRepository.findById(id).orElseThrow(() ->
+				new TransactionNotFoundException("Transação " + id + " não encontrada"));
+	}
 
 }

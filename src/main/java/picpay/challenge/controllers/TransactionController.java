@@ -27,7 +27,14 @@ public class TransactionController {
 		transactionService.createTransaction(transactionDTO);
 		return ResponseEntity.status(HttpStatus.OK).body(transactionDTO);
 	}
-
+	
+	@PostMapping("/reverse")
+	public ResponseEntity<Void> reverseTransaction(@RequestBody Transaction transaction) {
+		transactionService.reverseTransaction(transaction);
+		return ResponseEntity.status(HttpStatus.OK).build();
+		
+	}
+	
 	@GetMapping
 	public ResponseEntity<List<Transaction>> getAllTransactions () {
 	List<Transaction> list = transactionService.getAllTransactions();

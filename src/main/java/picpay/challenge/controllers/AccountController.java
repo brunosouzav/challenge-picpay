@@ -38,7 +38,8 @@ public class AccountController {
         accountService.createAccount(user, newAccount);
         return new ResponseEntity<>("Conta criada com sucesso", HttpStatus.CREATED);
     }
-
+    
+    
     @GetMapping()
     public ResponseEntity<?> getAllAccounts() {
         return new ResponseEntity<>(accountService.getAllAccount(), HttpStatus.OK);
